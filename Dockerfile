@@ -12,6 +12,7 @@ RUN apt-get install -y wget \
 	ca-certificates \
 	build-essential \
 	curl \
+        debconf-utils \
 	git-core \
 	pkg-config \
 	python3-dev \
@@ -23,7 +24,8 @@ RUN apt-get install -y wget \
 	unzip \
 	software-properties-common \
 	llvm \
-        libspatialindex-c4v5
+        libspatialindex-c4v5 \
+        rsyslog
 
 RUN apt install -y gdal-bin python-gdal python3-gdal
 
@@ -52,12 +54,14 @@ RUN echo "deb http://downloads.skewed.de/apt/bionic bionic universe" >> /etc/apt
 RUN echo "deb-src http://downloads.skewed.de/apt/bionic bionic universe" >> /etc/apt/sources.list.d/docker.list
 
 # Verify the package and update
-RUN apt-key adv --keyserver pgp.skewed.de --recv-key 612DEFB798507F25
+RUN apt-key adv --no-tty --keyserver pgp.skewed.de --recv-key 612DEFB798507F25
 RUN apt-key list
 RUN apt-get update
 
 # Install the package
-RUN apt-get install -y python3-graph-tool
+RUN echo 'tzdata	tzdata/Areas	select	US' | debconf-set-selections;\ 
+    echo 'tzdata	tzdata/Zones/US	select	Pacific' | debconf-set-selections;\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y python3-graph-tool
 
 # Update the file index - i use a lot
 RUN updatedb
